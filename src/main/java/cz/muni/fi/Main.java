@@ -88,22 +88,22 @@ public class Main {
                 + " For example, to exclude row ID, use option -noid.";
         String footer = "Created by Kristian Katanik.";
 
-        if(args.length == 0){
+        if (args.length == 0) {
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setOptionComparator(null);
-            helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer,true);
+            helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer, true);
             return;
         }
 
         CommandLine commandLine;
         try {
-            commandLine = new DefaultParser().parse(options,args);
-        } catch (ParseException e){
-            for(String arg: args){
-                if(arg.equals("-h") || arg.equals("--help")){
+            commandLine = new DefaultParser().parse(options, args);
+        } catch (ParseException e) {
+            for (String arg : args) {
+                if (arg.equals("-h") || arg.equals("--help")) {
                     HelpFormatter helpFormatter = new HelpFormatter();
                     helpFormatter.setOptionComparator(null);
-                    helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer,true);
+                    helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer, true);
                     return;
                 }
             }
@@ -115,7 +115,7 @@ public class Main {
         outputFileName = commandLine.getOptionValue("o");
         rawData = commandLine.getOptionValue("r");
 
-        if(commandLine.hasOption("cd")) {
+        if (commandLine.hasOption("cd")) {
             try {
                 clusterDistance = Double.parseDouble(commandLine.getOptionValue("cd"));
             } catch (NumberFormatException e) {
@@ -123,7 +123,7 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("cs")) {
+        if (commandLine.hasOption("cs")) {
             try {
                 clusterSize = Integer.parseInt(commandLine.getOptionValue("cs"));
             } catch (NumberFormatException e) {
@@ -131,7 +131,7 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("ci")) {
+        if (commandLine.hasOption("ci")) {
             try {
                 clusterIntensity = Double.parseDouble(commandLine.getOptionValue("ci"));
             } catch (NumberFormatException e) {
@@ -139,10 +139,10 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("fsp")){
+        if (commandLine.hasOption("fsp")) {
             findSharedPeaks = true;
         }
-        if(commandLine.hasOption("eth")) {
+        if (commandLine.hasOption("eth")) {
             try {
                 edgeToHeightRatio = Double.parseDouble(commandLine.getOptionValue("eth"));
             } catch (NumberFormatException e) {
@@ -150,7 +150,7 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("dth")) {
+        if (commandLine.hasOption("dth")) {
             try {
                 deltaToHeightRatio = Double.parseDouble(commandLine.getOptionValue("dth"));
             } catch (NumberFormatException e) {
@@ -158,7 +158,7 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("s")) {
+        if (commandLine.hasOption("s")) {
             try {
                 sharpness = Double.parseDouble(commandLine.getOptionValue("s"));
             } catch (NumberFormatException e) {
@@ -166,7 +166,7 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("sst")) {
+        if (commandLine.hasOption("sst")) {
             try {
                 shapeSimilarityTolerance = Double.parseDouble(commandLine.getOptionValue("sst"));
             } catch (NumberFormatException e) {
@@ -174,10 +174,10 @@ public class Main {
                 return;
             }
         }
-        if(commandLine.hasOption("sm")){
+        if (commandLine.hasOption("sm")) {
             mzValueModelPeak = false;
         }
-        if(commandLine.hasOption("emz")) {
+        if (commandLine.hasOption("emz")) {
             for (String value : commandLine.getOptionValues("emz")) {
                 try {
                     Range<Double> range = Range.closed(Double.parseDouble(value), Double.parseDouble(value));
@@ -188,111 +188,109 @@ public class Main {
                 }
             }
         }
-        if(commandLine.hasOption("fs")){
+        if (commandLine.hasOption("fs")) {
             fieldSeparator = commandLine.getOptionValue("fs");
         }
-        if(commandLine.hasOption("is")){
+        if (commandLine.hasOption("is")) {
             identificationSeparator = commandLine.getOptionValue("is");
         }
-        if(commandLine.hasOption("noqr")){
+        if (commandLine.hasOption("noqr")) {
             quantitationResults = false;
         }
-        if(commandLine.hasOption("noid")){
+        if (commandLine.hasOption("noid")) {
             id = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nort")){
+        if (commandLine.hasOption("nort")) {
             rt = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nomz")){
+        if (commandLine.hasOption("nomz")) {
             mz = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nomid")){
+        if (commandLine.hasOption("nomid")) {
             mainID = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("noaid")){
+        if (commandLine.hasOption("noaid")) {
             allIDs = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nomidd")){
+        if (commandLine.hasOption("nomidd")) {
             mainIdDetails = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nocom")){
+        if (commandLine.hasOption("nocom")) {
             comment = false;
             exportCommon--;
         }
-        if(commandLine.hasOption("nondp")){
+        if (commandLine.hasOption("nondp")) {
             numberOfDetectedPeaks = false;
             exportCommon--;
         }
 
 
-
-        if(commandLine.hasOption("nops")){
+        if (commandLine.hasOption("nops")) {
             peakStatus = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopdt")){
+        if (commandLine.hasOption("nopdt")) {
             peakDurationTime = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopa")){
+        if (commandLine.hasOption("nopa")) {
             peakArea = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopaf")){
+        if (commandLine.hasOption("nopaf")) {
             peakAsymmetryFactor = false;
             exportData--;
         }
-        if(commandLine.hasOption("noprt")){
+        if (commandLine.hasOption("noprt")) {
             peakRT = false;
             exportData--;
         }
-        if(commandLine.hasOption("noprte")){
+        if (commandLine.hasOption("noprte")) {
             peakRTEnd = false;
             exportData--;
         }
-        if(commandLine.hasOption("noprts")){
+        if (commandLine.hasOption("noprts")) {
             peakRTStart = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopmz")){
+        if (commandLine.hasOption("nopmz")) {
             peakMZ = false;
             exportData--;
         }
-        if(commandLine.hasOption("noph")){
+        if (commandLine.hasOption("noph")) {
             peakHeight = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopc")){
+        if (commandLine.hasOption("nopc")) {
             peakCharge = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopf")){
+        if (commandLine.hasOption("nopf")) {
             peakFWHM = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopdp")){
+        if (commandLine.hasOption("nopdp")) {
             peakDataPoints = false;
             exportData--;
         }
-        if(commandLine.hasOption("noptf")){
+        if (commandLine.hasOption("noptf")) {
             peakTailingFactor = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopmin")){
+        if (commandLine.hasOption("nopmin")) {
             peakMzMin = false;
             exportData--;
         }
-        if(commandLine.hasOption("nopmax")){
+        if (commandLine.hasOption("nopmax")) {
             peakMzMax = false;
             exportData--;
         }
-
 
 
         File inputFile;
@@ -314,12 +312,12 @@ public class Main {
         File outputFile;
         try {
             outputFile = new File(outputFileName);
-        } catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Unable to create/load output file.");
             return;
         }
 
-        if(!inputFile.exists() || inputFile.isDirectory() || !rawInputFile.exists() || rawInputFile.isDirectory()){
+        if (!inputFile.exists() || inputFile.isDirectory() || !rawInputFile.exists() || rawInputFile.isDirectory()) {
             System.err.println("Unable to load input/raw file.");
             return;
         }
@@ -335,14 +333,14 @@ public class Main {
             return;
         }
 
-        NetCDFReadTask netCDFReadTask = new NetCDFReadTask(mZmineProject,rawInputFile,rawDataFile2);
+        NetCDFReadTask netCDFReadTask = new NetCDFReadTask(mZmineProject, rawInputFile, rawDataFile2);
         netCDFReadTask.run();
         mZmineProject.addFile(rawDataFile2);
 
 
         XMLImportParameters xmlImportParameters = new XMLImportParameters();
         xmlImportParameters.getParameter(XMLImportParameters.filename).setValue(inputFile);
-        cz.muni.fi.XMLImportTask xmlImportTask = new cz.muni.fi.XMLImportTask(mZmineProject,xmlImportParameters);
+        cz.muni.fi.XMLImportTask xmlImportTask = new cz.muni.fi.XMLImportTask(mZmineProject, xmlImportParameters);
         xmlImportTask.run();
 
 
@@ -362,14 +360,14 @@ public class Main {
         peakListsSelection.setSelectionType(PeakListsSelectionType.ALL_PEAKLISTS);
 
         ADAP3DecompositionV1_5Parameters adap3DecompositionV1_5Parameters = setADAP3DecompositionParameters(clusterDistance,
-                clusterIntensity,clusterSize,sharpness,deltaToHeightRatio,edgeToHeightRatio,shapeSimilarityTolerance,findSharedPeaks,
-                mzValueModelPeak,excludeMzValues);
+                clusterIntensity, clusterSize, sharpness, deltaToHeightRatio, edgeToHeightRatio, shapeSimilarityTolerance, findSharedPeaks,
+                mzValueModelPeak, excludeMzValues);
 
         cz.muni.fi.ADAP3DecompositionV1_5Task task =
-                new cz.muni.fi.ADAP3DecompositionV1_5Task(mZmineProject,mZmineProject.getPeakLists()[0],adap3DecompositionV1_5Parameters);
+                new cz.muni.fi.ADAP3DecompositionV1_5Task(mZmineProject, mZmineProject.getPeakLists()[0], adap3DecompositionV1_5Parameters);
         task.run();
 
-        CSVExportParameters csvExportParameters = setCSVExportParameters(mZmineProject,outputFile,fieldSeparator,identificationSeparator,
+        CSVExportParameters csvExportParameters = setCSVExportParameters(mZmineProject, outputFile, fieldSeparator, identificationSeparator,
                 quantitationResults, setRowDataFileElements(), setExportRowCommonElements());
 
         CSVExportTask csvExportTask = new CSVExportTask(csvExportParameters);
@@ -378,11 +376,11 @@ public class Main {
 
     }
 
-    private static Options setOptions(){
+    private static Options setOptions() {
         Options options = new Options();
         options.addOption(Option.builder("i").required().hasArg().longOpt("inputFile").desc("[required] Name or path of input file. File name must end with .MPL").build());
         options.addOption(Option.builder("o").required().hasArg().longOpt("outputFile").desc("[required] Name or path of output file. File name must end with .CSV").build());
-        options.addOption(Option.builder("r").required().hasArg().longOpt("rawDataFile").desc("[required] Name or path of raw data file from previous step. File name must end with .CDF").build());
+        options.addOption(Option.builder("r").required(false).hasArg().longOpt("rawDataFile").desc("[required] Name or path of raw data file from previous step. File name must end with .CDF").build());
         options.addOption(Option.builder("cd").required(false).hasArg().longOpt("clusterDistance").desc("Minimum distance between any two clusters. [default 0.01]").build());
         options.addOption(Option.builder("cs").required(false).hasArg().longOpt("clusterSize").desc("Minimum size of a cluster. [default 2]").build());
         options.addOption(Option.builder("ci").required(false).hasArg().longOpt("clusterIntensity").desc("If the highest peak in a cluster has the intensity below" +
@@ -432,9 +430,9 @@ public class Main {
     }
 
     private static ADAP3DecompositionV1_5Parameters setADAP3DecompositionParameters(Double clusterDistance, Double clusterIntensity,
-                                                                                   Integer clusterSize, Double sharpness, Double deltaToHeightRatio,
-                                                                                   Double edgeToHeightRatio, Double shapeSimilarityTolerance,
-                                                                                   Boolean findSharedPeaks, Boolean mzValueModelPeak, List<Range<Double>> excludeMzValues) {
+                                                                                    Integer clusterSize, Double sharpness, Double deltaToHeightRatio,
+                                                                                    Double edgeToHeightRatio, Double shapeSimilarityTolerance,
+                                                                                    Boolean findSharedPeaks, Boolean mzValueModelPeak, List<Range<Double>> excludeMzValues) {
         ADAP3DecompositionV1_5Parameters parameters = new ADAP3DecompositionV1_5Parameters();
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.MIN_CLUSTER_DISTANCE).setValue(clusterDistance);
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.MIN_CLUSTER_INTENSITY).setValue(clusterIntensity);
@@ -444,25 +442,25 @@ public class Main {
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.EDGE_TO_HEIGHT_RATIO).setValue(edgeToHeightRatio);
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.SHAPE_SIM_THRESHOLD).setValue(shapeSimilarityTolerance);
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.USE_ISSHARED).setValue(findSharedPeaks);
-        if(mzValueModelPeak){
+        if (mzValueModelPeak) {
             parameters.getParameter(ADAP3DecompositionV1_5Parameters.MODEL_PEAK_CHOICE).setValue("M/z value");
-        } else{
+        } else {
             parameters.getParameter(ADAP3DecompositionV1_5Parameters.MODEL_PEAK_CHOICE).setValue("Shaprness");
         }
 
-        if(excludeMzValues.isEmpty()){
+        if (excludeMzValues.isEmpty()) {
             parameters.getParameter(ADAP3DecompositionV1_5Parameters.MZ_VALUES).setValue(Collections.<Range<Double>>emptyList());
-        } else{
+        } else {
             parameters.getParameter(ADAP3DecompositionV1_5Parameters.MZ_VALUES).setValue(excludeMzValues);
         }
 
         return parameters;
     }
 
-    private static CSVExportParameters setCSVExportParameters(MZmineProject mZmineProject,File outputFile, String fieldSeparator,
-                                                             String identificationSeparator, Boolean quantitationResults,
-                                                             MultiChoiceParameter<ExportRowDataFileElement> exportDataFileItems,
-                                                             MultiChoiceParameter<ExportRowCommonElement> exportCommonItems) {
+    private static CSVExportParameters setCSVExportParameters(MZmineProject mZmineProject, File outputFile, String fieldSeparator,
+                                                              String identificationSeparator, Boolean quantitationResults,
+                                                              MultiChoiceParameter<ExportRowDataFileElement> exportDataFileItems,
+                                                              MultiChoiceParameter<ExportRowCommonElement> exportCommonItems) {
 
         PeakListsSelection peakListsSelection = new PeakListsSelection();
         peakListsSelection.setSelectionType(PeakListsSelectionType.ALL_PEAKLISTS);
@@ -488,39 +486,39 @@ public class Main {
     }
 
 
-    private static MultiChoiceParameter<ExportRowCommonElement> setExportRowCommonElements(){
+    private static MultiChoiceParameter<ExportRowCommonElement> setExportRowCommonElements() {
 
         ExportRowCommonElement[] rowCommonElements = new ExportRowCommonElement[exportCommon];
         int position = 0;
-        if(id){
+        if (id) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_ID;
             position++;
         }
-        if(rt){
+        if (rt) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_RT;
             position++;
         }
-        if(mainID){
+        if (mainID) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_IDENTITY;
             position++;
         }
-        if(mainIdDetails){
+        if (mainIdDetails) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_IDENTITY_DETAILS;
             position++;
         }
-        if(mz){
+        if (mz) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_MZ;
             position++;
         }
-        if(allIDs){
+        if (allIDs) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_IDENTITY_ALL;
             position++;
         }
-        if(comment){
+        if (comment) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_COMMENT;
             position++;
         }
-        if(numberOfDetectedPeaks){
+        if (numberOfDetectedPeaks) {
             rowCommonElements[position] = ExportRowCommonElement.ROW_PEAK_NUMBER;
         }
         MultiChoiceParameter<ExportRowCommonElement> exportCommonItems = new MultiChoiceParameter<>(
@@ -531,68 +529,68 @@ public class Main {
         return exportCommonItems;
     }
 
-    private static MultiChoiceParameter<ExportRowDataFileElement> setRowDataFileElements(){
+    private static MultiChoiceParameter<ExportRowDataFileElement> setRowDataFileElements() {
 
         ExportRowDataFileElement[] rowDataFileElements = new ExportRowDataFileElement[exportData];
         int position = 0;
 
-        if(peakStatus){
+        if (peakStatus) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_STATUS;
             position++;
         }
-        if(peakMZ){
+        if (peakMZ) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_MZ;
             position++;
         }
-        if(peakRT){
+        if (peakRT) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_RT;
             position++;
         }
-        if(peakRTStart){
+        if (peakRTStart) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_RT_START;
             position++;
         }
-        if(peakRTEnd){
+        if (peakRTEnd) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_RT_END;
             position++;
         }
-        if(peakDurationTime){
+        if (peakDurationTime) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_DURATION;
             position++;
         }
-        if(peakHeight){
+        if (peakHeight) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_HEIGHT;
             position++;
         }
-        if(peakArea){
+        if (peakArea) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_AREA;
             position++;
         }
-        if(peakCharge){
+        if (peakCharge) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_CHARGE;
             position++;
         }
-        if(peakDataPoints){
+        if (peakDataPoints) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_DATAPOINTS;
             position++;
         }
-        if(peakFWHM){
+        if (peakFWHM) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_FWHM;
             position++;
         }
-        if(peakTailingFactor){
+        if (peakTailingFactor) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_TAILINGFACTOR;
             position++;
         }
-        if(peakAsymmetryFactor){
+        if (peakAsymmetryFactor) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_ASYMMETRYFACTOR;
             position++;
         }
-        if(peakMzMin){
+        if (peakMzMin) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_MZMIN;
             position++;
         }
-        if(peakMzMax){
+        if (peakMzMax) {
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_MZMAX;
         }
 
