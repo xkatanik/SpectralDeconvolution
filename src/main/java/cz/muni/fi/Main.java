@@ -1,48 +1,71 @@
 package cz.muni.fi;
 
 import com.google.common.collect.Range;
-import javafx.beans.binding.ListBinding;
-import javafx.collections.ObservableList;
 import net.sf.mzmine.datamodel.MZmineProject;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.main.MZmineConfiguration;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.main.impl.MZmineConfigurationImpl;
-import net.sf.mzmine.modules.peaklistmethods.io.csvexport.*;
+import net.sf.mzmine.modules.peaklistmethods.io.csvexport.CSVExportParameters;
 import net.sf.mzmine.modules.peaklistmethods.io.csvexport.ExportRowCommonElement;
 import net.sf.mzmine.modules.peaklistmethods.io.csvexport.ExportRowDataFileElement;
-import net.sf.mzmine.modules.peaklistmethods.io.xmlimport.XMLImportParameters;
+import net.sf.mzmine.modules.peaklistmethods.io.xmlimport.*;
 import net.sf.mzmine.modules.peaklistmethods.peakpicking.adap3decompositionV1_5.ADAP3DecompositionV1_5Parameters;
-import net.sf.mzmine.modules.peaklistmethods.peakpicking.adap3decompositionV1_5.ADAP3DecompositionV1_5Task;
 import net.sf.mzmine.modules.rawdatamethods.rawdataimport.fileformats.NetCDFReadTask;
 import net.sf.mzmine.parameters.parametertypes.MultiChoiceParameter;
-import net.sf.mzmine.parameters.parametertypes.ranges.ListDoubleRangeParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsSelection;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsSelectionType;
 import net.sf.mzmine.project.impl.MZmineProjectImpl;
 import net.sf.mzmine.project.impl.ProjectManagerImpl;
 import net.sf.mzmine.project.impl.RawDataFileImpl;
+import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
+ * Spectral deconvolution module.
+ *
  * @author Kristian Katanik
  */
-public class Main{
+public class Main {
 
-    public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    private static Boolean id = true;
+    private static Boolean mz = true;
+    private static Boolean rt = true;
+    private static Boolean mainID = true;
+    private static Boolean allIDs = true;
+    private static Boolean mainIdDetails = true;
+    private static Boolean comment = true;
+    private static Boolean numberOfDetectedPeaks = true;
+    private static Boolean peakStatus = true;
+    private static Boolean peakMZ = true;
+    private static Boolean peakRT = true;
+    private static Boolean peakRTStart = true;
+    private static Boolean peakRTEnd = true;
+    private static Boolean peakDurationTime = true;
+    private static Boolean peakHeight = true;
+    private static Boolean peakArea = true;
+    private static Boolean peakCharge = true;
+    private static Boolean peakDataPoints = true;
+    private static Boolean peakFWHM = true;
+    private static Boolean peakTailingFactor = true;
+    private static Boolean peakAsymmetryFactor = true;
+    private static Boolean peakMzMin = true;
+    private static Boolean peakMzMax = true;
+    private static int exportCommon = 8;
+    private static int exportData = 15;
 
-        Integer i = 0;
-        String inputFileName = null;
-        String rawData = null;
-        String outputFileName = null;
+    public static void main(String[] args) throws IOException, NoSuchFieldException, IllegalAccessException {
+
+        String inputFileName;
+        String rawData;
+        String outputFileName;
         Double clusterDistance = 0.01;
         Integer clusterSize = 2;
         Double clusterIntensity = 500.0;
@@ -56,351 +79,221 @@ public class Main{
 
         //export parameters
         String fieldSeparator = ",";
-        Boolean id = true;
-        Boolean mz = true;
-        Boolean rt = true;
-        Boolean mainID = true;
-        Boolean allIDs = true;
-        Boolean mainIdDetails = true;
-        Boolean comment = true;
-        Boolean numberOfDetectedPeaks = true;
-        Boolean peakStatus = true;
-        Boolean peakMZ = true;
-        Boolean peakRT = true;
-        Boolean peakRTStart = true;
-        Boolean peakRTEnd = true;
-        Boolean peakDurationTime = true;
-        Boolean peakHeight = true;
-        Boolean peakArea = true;
-        Boolean peakCharge = true;
-        Boolean peakDataPoints = true;
-        Boolean peakFWHM = true;
-        Boolean peakTailingFactor = true;
-        Boolean peakAsymmetryFactor = true;
-        Boolean peakMZmin = true;
-        Boolean peakMZmax = true;
-        Boolean quantitationResults = true;
         String identificationSeparator = ";";
-
-        int exportCommon = 8;
-        int exportData = 15;
+        Boolean quantitationResults = true;
 
 
-        while(i < args.length){
-            switch (args[i]){
-                case "-inputFile":
-                    inputFileName = args[i+1];
-                    i += 2;
-                    break;
-                case "-outputFile":
-                    outputFileName = args[i+1];
-                    i += 2;
-                    break;
-                case "-rawDataFile":
-                    rawData = args[i+1];
-                    i += 2;
-                    break;
-                case "-clusterDistance":
-                    try {
-                        clusterDistance = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -clusterDistance parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-clusterSize":
-                    try {
-                        clusterSize = Integer.parseInt(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -clusterSize parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-clusterIntensity":
-                    try {
-                        clusterIntensity = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -clusterIntensity parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-findSharedPeaks":
-                    if(args[i+1].equals("f") || args[i+1].equals("false")){
-                        findSharedPeaks = false;
-                    } else if (args[i+1].equals("t") || args[i+1].equals("true")){
-                        findSharedPeaks = true;
-                    } else{
-                        System.err.println("Wrong format of -findSharedPeaks parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-edgeToHeightRatio":
-                    try {
-                        edgeToHeightRatio = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -edgeToHeightRatio parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-deltaToHeightRatio":
-                    try {
-                        deltaToHeightRatio = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -deltaToHeightRatio parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-sharpness":
-                    try {
-                        sharpness = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -sharpness parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-shapeSimilarityTolerance":
-                    try {
-                        shapeSimilarityTolerance = Double.parseDouble(args[i+1]);
-                    } catch (Exception e){
-                        System.err.println("Wrong format of -shapeSimilarityTolerance parameter.");
-                        return;
-                    }
-                    i += 2;
-                    break;
-                case "-sharpnessModel":
-                    mzValueModelPeak = false;
-                    i++;
-                    break;
-                case "-mzModel":
-                    i++;
-                    break;
-                case "-excludeMzValues":
-                    while(i+1 < args.length && !args[i+1].contains("-")) {
-                        try {
-                            Range<Double> range = Range.closed(Double.parseDouble(args[i + 1]), Double.parseDouble(args[i + 1]));
-                            excludeMzValues.add(range);
-                        } catch (Exception e) {
-                            System.err.println("Wrong format of -excludeMzValues parameter.");
-                            return;
-                        }
-                        i++;
-                    }
-                    i++;
-                    break;
+        Options options = setOptions();
+        String header = "All options from -qr are output options and are set on true as default. To exclude some row from output file, use specific option."
+                + " For example, to exclude row ID, use option -noid.";
+        String footer = "Created by Kristian Katanik.";
 
-                //Export arguments
-                case "-fieldSeparator":
-                    fieldSeparator = args[i+1];
-                    i += 2;
-                    break;
-                case "-identificationSeparator":
-                    identificationSeparator = args[i+1];
-                    i += 2;
-                    break;
-                case "-id":
-                    id = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-rt":
-                    rt = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-mz":
-                    mz = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-mainID":
-                    mainID = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-allID":
-                    allIDs = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-mainIdDetails":
-                    mainIdDetails = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-comment":
-                    comment = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-numberOfDetectedPeaks":
-                    numberOfDetectedPeaks = false;
-                    i++;
-                    exportCommon--;
-                    break;
-                case "-peakStatus":
-                    peakStatus = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakMZ":
-                    peakMZ = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakRT":
-                    peakRT = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakRTStart":
-                    peakRTStart = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakRTEnd":
-                    peakRTEnd = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakDurationTime":
-                    peakDurationTime = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakHeight":
-                    peakHeight = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakArea":
-                    peakArea = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakCharge":
-                    peakCharge = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakDataPoints":
-                    peakDataPoints = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakFWHM":
-                    peakFWHM = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakTailingFactor":
-                    peakTailingFactor = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakAsymmetryFactor":
-                    peakAsymmetryFactor = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakMZmin":
-                    peakMZmin = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-peakMZmax":
-                    peakMZmax = false;
-                    i++;
-                    exportData--;
-                    break;
-                case "-quantitationResults":
-                    quantitationResults = false;
-                    i++;
-                    break;
-                case "-help":
-                    System.out.println("Hierarchical Clustering (Spectral deconvolution).\n" +
-                            "This method combines peaks into analytes and constructs fragmentation spectrum for each analyte.\n"+
-                            "\n" +
-                            "Required parameters:\n" +
-                            "\t-inputFile | Name or path of input file after ADAP Chromatogram builder, ending with .MPL\n" +
-                            "\t-outputFile | Name or path of output file. File name must end with .CSV\n" +
-                            "\t-rawDataFile | Name or path of input file after Mass detection, ending with .CDF\n" +
-                            "\n" +
-                            "Optional parameters:\n" +
-                            "\t-clusterDistance | Minimum distance between any two clusters.\n" +
-                            "\t\t[default 0.01]\n" +
-                            "\t-clusterSize | Minimum size of a cluster.\n" +
-                            "\t\t[default 2]\n" +
-                            "\t-clusterIntensity | If the highest peak in a cluster has the intensity below\n" +
-                            "\t\tMinimum Cluster Intensity,the cluster is removed.\n" +
-                            "\t\t[default 500.0]\n" +
-                            "\t-findSharedPeaks | If selected, peaks are marked as Shared if they are composed of two or more peaks.\n" +
-                            "\t\t[default false]\n" +
-                            "\t-edgeToHeightRatio | A peak is considered shared if its edge-to-height ratio is below this parameter\n" +
-                            "\t\t[default 0.3]\n" +
-                            "\t-deltaToHeightRatio | A peak is considered shared if its delta (difference between the edges)-to-height\n" +
-                            "\t\tratio is below this parameter.\n" +
-                            "\t\t[default 0.2]\n" +
-                            "\t-sharpness | Minimum sharpness that the model peak can have.\n" +
-                            "\t\t[default 10]\n" +
-                            "\t-shapeSimilarityTolerance | Shape-similarity threshold is used to find similar peaks.(0..90)\n" +
-                            "\t\t[default 18]\n" +
-                            "\t-sharpnessModel or -mzModel\n" +
-                            "\t\tCriterion to choose a model peak in a cluster: either peak with the highest m/z-value or with the highest sharpness.\n" +
-                            "\t\t[default from 0.00 to 0.10]\n" +
-                            "\t-mzModel | Upper and lower bounds of retention times to be used for setting the wavelet scales.\n" +
-                            "\t\tChoose a range that that similar to the range of peak widths expected to be found from the data.\n" +
-                            "\t\t[default from 0.00 to 0.10]\n" +
-                            "\t-excludeMzValues | M/z-values to exclude while selecting model peak.\n" +
-                            "\t\tDivide values with space, etc. \"12.0 15.0\"\n" +
-                            "\t\t[default none]\n" +
-                            "\n" +
-                            "Default value of all following parameters is TRUE, so output file will contain all parameters.\n" +
-                            "Use following parameters to exclude them from output file.\n" +
-                            "Export parameters:\n" +
-                            "\t-fieldSeparator | Field separator [default , ]\n" +
-                            "\t-identificationSeparator | Identification separator [default ; ]\n" +
-                            "\t-quantitationResults | Export quantitation results and other information\n" +
-                            "\t Export common elements:\n" +
-                            "\t\t-id | Export row ID\n" +
-                            "\t\t-mz | Export row m/z\n" +
-                            "\t\t-rt | Export row retention time\n" +
-                            "\t\t-mainID | Export row identity (main ID)\n" +
-                            "\t\t-allID | Export row identity (all IDs)\n" +
-                            "\t\t-mainIdDetails | Export row identity (main ID + details)\n" +
-                            "\t\t-comment | Export row comment\n" +
-                            "\t\t-numberOfDetectedPeaks | Export row number of detected peaks\n" +
-                            "\t Export data file elements:\n" +
-                            "\t\t-peakStatus | Peak status\n" +
-                            "\t\t-peakMZ | Peak m/z\n" +
-                            "\t\t-peakRT | Peak RT\n" +
-                            "\t\t-peakRTStart | Peak RT start\n" +
-                            "\t\t-peakRTEnd | Peak RT end\n" +
-                            "\t\t-peakDurationTime | Peak duration time\n" +
-                            "\t\t-peakHeight | Peak height\n" +
-                            "\t\t-peakArea | Peak area\n" +
-                            "\t\t-peakCharge | Peak charge\n" +
-                            "\t\t-peakDataPoints | Peak # data points\n" +
-                            "\t\t-peakFWHM | Peak FWHM\n" +
-                            "\t\t-peakTailingFactor | Peak tailing factor\n" +
-                            "\t\t-peakAsymmetryFactor | Peak assymetry factor\n" +
-                            "\t\t-peakMZmin | Peak m/z min\n" +
-                            "\t\t-peakMZmax | Peak m/z max\n" +
-                            "\n");
-                    return;
-                default:
-                    i++;
-                    break;
-            }
+        if(args.length == 0){
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.setOptionComparator(null);
+            helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer,true);
+            return;
         }
 
-        //Reading 2 input files
+        CommandLine commandLine;
+        try {
+            commandLine = new DefaultParser().parse(options,args);
+        } catch (ParseException e){
+            for(String arg: args){
+                if(arg.equals("-h") || arg.equals("--help")){
+                    HelpFormatter helpFormatter = new HelpFormatter();
+                    helpFormatter.setOptionComparator(null);
+                    helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer,true);
+                    return;
+                }
+            }
+            System.err.println("Some of the required parameters or their arguments are missing. Use -h or --help for help.");
+            return;
+        }
+
+        inputFileName = commandLine.getOptionValue("i");
+        outputFileName = commandLine.getOptionValue("o");
+        rawData = commandLine.getOptionValue("r");
+
+        if(commandLine.hasOption("cd")) {
+            try {
+                clusterDistance = Double.parseDouble(commandLine.getOptionValue("cd"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of clusterDistance value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("cs")) {
+            try {
+                clusterSize = Integer.parseInt(commandLine.getOptionValue("cs"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of clusterSize value. Value has to be number in integer format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("ci")) {
+            try {
+                clusterIntensity = Double.parseDouble(commandLine.getOptionValue("ci"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of clusterIntensity value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("fsp")){
+            findSharedPeaks = true;
+        }
+        if(commandLine.hasOption("eth")) {
+            try {
+                edgeToHeightRatio = Double.parseDouble(commandLine.getOptionValue("eth"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of edgeToHeightRatio value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("dth")) {
+            try {
+                deltaToHeightRatio = Double.parseDouble(commandLine.getOptionValue("dth"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of deltaToHeightRatio value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("s")) {
+            try {
+                sharpness = Double.parseDouble(commandLine.getOptionValue("s"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of sharpness value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("sst")) {
+            try {
+                shapeSimilarityTolerance = Double.parseDouble(commandLine.getOptionValue("sst"));
+            } catch (NumberFormatException e) {
+                System.err.println("Wrong format of shapeSimilarityTolerance value. Value has to be number in double format.");
+                return;
+            }
+        }
+        if(commandLine.hasOption("sm")){
+            mzValueModelPeak = false;
+        }
+        if(commandLine.hasOption("emz")) {
+            for (String value : commandLine.getOptionValues("emz")) {
+                try {
+                    Range<Double> range = Range.closed(Double.parseDouble(value), Double.parseDouble(value));
+                    excludeMzValues.add(range);
+                } catch (Exception e) {
+                    System.err.println("Wrong format of -excludeMzValues parameter.");
+                    return;
+                }
+            }
+        }
+        if(commandLine.hasOption("fs")){
+            fieldSeparator = commandLine.getOptionValue("fs");
+        }
+        if(commandLine.hasOption("is")){
+            identificationSeparator = commandLine.getOptionValue("is");
+        }
+        if(commandLine.hasOption("noqr")){
+            quantitationResults = false;
+        }
+        if(commandLine.hasOption("noid")){
+            id = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nort")){
+            rt = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nomz")){
+            mz = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nomid")){
+            mainID = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("noaid")){
+            allIDs = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nomidd")){
+            mainIdDetails = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nocom")){
+            comment = false;
+            exportCommon--;
+        }
+        if(commandLine.hasOption("nondp")){
+            numberOfDetectedPeaks = false;
+            exportCommon--;
+        }
+
+
+
+        if(commandLine.hasOption("nops")){
+            peakStatus = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopdt")){
+            peakDurationTime = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopa")){
+            peakArea = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopaf")){
+            peakAsymmetryFactor = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("noprt")){
+            peakRT = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("noprte")){
+            peakRTEnd = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("noprts")){
+            peakRTStart = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopmz")){
+            peakMZ = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("noph")){
+            peakHeight = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopc")){
+            peakCharge = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopf")){
+            peakFWHM = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopdp")){
+            peakDataPoints = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("noptf")){
+            peakTailingFactor = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopmin")){
+            peakMzMin = false;
+            exportData--;
+        }
+        if(commandLine.hasOption("nopmax")){
+            peakMzMax = false;
+            exportData--;
+        }
+
+
 
         File inputFile;
         try {
@@ -432,23 +325,15 @@ public class Main{
         }
 
         final MZmineProject mZmineProject = new MZmineProjectImpl();
-        RawDataFileImpl rawDataFile = null;
-        try {
-            rawDataFile = new RawDataFileImpl(inputFile.getName());
-        } catch (IOException e) {
-            System.err.println("Cant load input data file.");
-            return;
-        }
 
         //code for raw data
-        RawDataFileImpl rawDataFile2 = null;
+        RawDataFileImpl rawDataFile2;
         try {
             rawDataFile2 = new RawDataFileImpl(rawInputFile.getName());
         } catch (IOException e) {
             System.err.println("Unable to open raw data file.");
             return;
         }
-
 
         NetCDFReadTask netCDFReadTask = new NetCDFReadTask(mZmineProject,rawInputFile,rawDataFile2);
         netCDFReadTask.run();
@@ -476,7 +361,80 @@ public class Main{
         PeakListsSelection peakListsSelection = new PeakListsSelection();
         peakListsSelection.setSelectionType(PeakListsSelectionType.ALL_PEAKLISTS);
 
+        ADAP3DecompositionV1_5Parameters adap3DecompositionV1_5Parameters = setADAP3DecompositionParameters(clusterDistance,
+                clusterIntensity,clusterSize,sharpness,deltaToHeightRatio,edgeToHeightRatio,shapeSimilarityTolerance,findSharedPeaks,
+                mzValueModelPeak,excludeMzValues);
 
+        cz.muni.fi.ADAP3DecompositionV1_5Task task =
+                new cz.muni.fi.ADAP3DecompositionV1_5Task(mZmineProject,mZmineProject.getPeakLists()[0],adap3DecompositionV1_5Parameters);
+        task.run();
+
+        CSVExportParameters csvExportParameters = setCSVExportParameters(mZmineProject,outputFile,fieldSeparator,identificationSeparator,
+                quantitationResults, setRowDataFileElements(), setExportRowCommonElements());
+
+        CSVExportTask csvExportTask = new CSVExportTask(csvExportParameters);
+        csvExportTask.run();
+
+
+    }
+
+    private static Options setOptions(){
+        Options options = new Options();
+        options.addOption(Option.builder("i").required().hasArg().longOpt("inputFile").desc("[required] Name or path of input file. File name must end with .MPL").build());
+        options.addOption(Option.builder("o").required().hasArg().longOpt("outputFile").desc("[required] Name or path of output file. File name must end with .CSV").build());
+        options.addOption(Option.builder("r").required().hasArg().longOpt("rawDataFile").desc("[required] Name or path of raw data file from previous step. File name must end with .CDF").build());
+        options.addOption(Option.builder("cd").required(false).hasArg().longOpt("clusterDistance").desc("Minimum distance between any two clusters. [default 0.01]").build());
+        options.addOption(Option.builder("cs").required(false).hasArg().longOpt("clusterSize").desc("Minimum size of a cluster. [default 2]").build());
+        options.addOption(Option.builder("ci").required(false).hasArg().longOpt("clusterIntensity").desc("If the highest peak in a cluster has the intensity below" +
+                " Minimum Cluster Intensity,the cluster is removed.[default 500.0]").build());
+        options.addOption(Option.builder("fsp").required(false).longOpt("findSharedPeaks").desc("If selected, peaks are marked as Shared" +
+                " if they are composed of two or more peaks. [default false]").build());
+        options.addOption(Option.builder("eth").required(false).hasArg().longOpt("edgeToHeightRatio").desc("A peak is considered shared if its edge-to-height" +
+                " ratio is below this parameter[default 0.3]").build());
+        options.addOption(Option.builder("dth").required(false).hasArg().longOpt("deltaToHeightRatio").desc("A peak is considered shared if its delta (difference between the edges)-to-height" +
+                " ratio is below this parameter. [default 0.2]").build());
+        options.addOption(Option.builder("s").required(false).hasArg().longOpt("sharpness").desc("Minimum sharpness that the model peak can have. [default 10]").build());
+        options.addOption(Option.builder("sst").required(false).hasArg().longOpt("shapeSimilarityTolerance").desc("Shape-similarity threshold is used to find similar peaks.(0..90) [default 18]").build());
+        options.addOption(Option.builder("sm").required(false).longOpt("sharpnessModel").desc("Criterion to choose a model peak in a cluster: either peak with the highest m/z-value or with the highest sharpness.").build());
+        options.addOption(Option.builder("mz").required(false).longOpt("mzModel").desc("Criterion to choose a model peak in a cluster: either peak with the highest m/z-value or with the highest sharpness. [as default]").build());
+        options.addOption(Option.builder("emz").required(false).hasArgs().longOpt("excludeMzValues").desc("M/z-values to exclude while selecting model peak." +
+                " Divide values with space, etc. 12.0 15.0 [default none]").build());
+        options.addOption(Option.builder("fs").required(false).hasArg().longOpt("fieldSeparator").desc("Field separator [default , ]").build());
+        options.addOption(Option.builder("is").required(false).hasArg().longOpt("identificationSeparator").desc("Identification separator [default ; ]").build());
+        options.addOption(Option.builder("noqr").required(false).longOpt("quantitationResults").desc("Do not export quantitation results and other information").build());
+        options.addOption(Option.builder("noid").required(false).desc("Do not export row ID").build());
+        options.addOption(Option.builder("nomz").required(false).desc("Do not export row m/z").build());
+        options.addOption(Option.builder("nort").required(false).desc("Do not export row retention time").build());
+        options.addOption(Option.builder("nomid").required(false).longOpt("mainID").desc("Do not export row identity (main ID)").build());
+        options.addOption(Option.builder("noaid").required(false).longOpt("allID").desc("Do not export row identity (all IDs)").build());
+        options.addOption(Option.builder("nomidd").required(false).longOpt("mainIdDetails").desc("Do not export row identity (main ID + details)").build());
+        options.addOption(Option.builder("nocom").required(false).longOpt("comment").desc("Do not export row comment").build());
+        options.addOption(Option.builder("nondp").required(false).longOpt("numberOfDetectedPeaks").desc("Do not export row number of detected peaks").build());
+        options.addOption(Option.builder("nops").required(false).longOpt("peakStatus").desc("Do not export Peak status").build());
+        options.addOption(Option.builder("nopmz").required(false).longOpt("peakMZ").desc("Do not export Peak m/z").build());
+        options.addOption(Option.builder("noprt").required(false).longOpt("peakRT").desc("Do not export Peak RT").build());
+        options.addOption(Option.builder("noprts").required(false).longOpt("peakRTStart").desc("Do not export Peak RT start").build());
+        options.addOption(Option.builder("noprte").required(false).longOpt("peakRTEnd").desc("Do not export Peak RT end").build());
+        options.addOption(Option.builder("nopdt").required(false).longOpt("peakDurationTime").desc("Do not export Peak duration time").build());
+        options.addOption(Option.builder("noph").required(false).longOpt("peakHeight").desc("Do not export Peak height").build());
+        options.addOption(Option.builder("nopa").required(false).longOpt("peakArea").desc("Do not export Peak area").build());
+        options.addOption(Option.builder("nopc").required(false).longOpt("peakCharge").desc("Do not export Peak charge").build());
+        options.addOption(Option.builder("nopdp").required(false).longOpt("peakDataPoints").desc("Do not export Peak # data points").build());
+        options.addOption(Option.builder("nopf").required(false).longOpt("peakFWHM").desc("Do not export Peak FWHM").build());
+        options.addOption(Option.builder("noptf").required(false).longOpt("peakTailingFactor").desc("Do not export Peak tailing factor").build());
+        options.addOption(Option.builder("nopaf").required(false).longOpt("peakAssymetryFactor").desc("Do not export Peak assymetry factor").build());
+        options.addOption(Option.builder("nopmin").required(false).longOpt("peakMzMin").desc("Do not export Peak m/z min").build());
+        options.addOption(Option.builder("nopmax").required(false).longOpt("peakMzMax").desc("Do not export Peak m/z max").build());
+        options.addOption(Option.builder("h").required(false).longOpt("help").build());
+
+        return options;
+
+    }
+
+    private static ADAP3DecompositionV1_5Parameters setADAP3DecompositionParameters(Double clusterDistance, Double clusterIntensity,
+                                                                                   Integer clusterSize, Double sharpness, Double deltaToHeightRatio,
+                                                                                   Double edgeToHeightRatio, Double shapeSimilarityTolerance,
+                                                                                   Boolean findSharedPeaks, Boolean mzValueModelPeak, List<Range<Double>> excludeMzValues) {
         ADAP3DecompositionV1_5Parameters parameters = new ADAP3DecompositionV1_5Parameters();
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.MIN_CLUSTER_DISTANCE).setValue(clusterDistance);
         parameters.getParameter(ADAP3DecompositionV1_5Parameters.MIN_CLUSTER_INTENSITY).setValue(clusterIntensity);
@@ -498,12 +456,16 @@ public class Main{
             parameters.getParameter(ADAP3DecompositionV1_5Parameters.MZ_VALUES).setValue(excludeMzValues);
         }
 
+        return parameters;
+    }
 
+    private static CSVExportParameters setCSVExportParameters(MZmineProject mZmineProject,File outputFile, String fieldSeparator,
+                                                             String identificationSeparator, Boolean quantitationResults,
+                                                             MultiChoiceParameter<ExportRowDataFileElement> exportDataFileItems,
+                                                             MultiChoiceParameter<ExportRowCommonElement> exportCommonItems) {
 
-        cz.muni.fi.ADAP3DecompositionV1_5Task task =
-                new cz.muni.fi.ADAP3DecompositionV1_5Task(mZmineProject,mZmineProject.getPeakLists()[0],parameters);
-        task.run();
-
+        PeakListsSelection peakListsSelection = new PeakListsSelection();
+        peakListsSelection.setSelectionType(PeakListsSelectionType.ALL_PEAKLISTS);
 
         PeakListsParameter peakListsParameter = new PeakListsParameter();
         PeakListsSelection peakListsSelection1 = new PeakListsSelection();
@@ -519,6 +481,14 @@ public class Main{
         csvExportParameters.getParameter(CSVExportParameters.fieldSeparator).setValue(fieldSeparator);
         csvExportParameters.getParameter(CSVExportParameters.idSeparator).setValue(identificationSeparator);
         csvExportParameters.getParameter(CSVExportParameters.exportAllPeakInfo).setValue(quantitationResults);
+        csvExportParameters.getParameter(CSVExportParameters.exportCommonItems).setValue(exportCommonItems.getValue());
+        csvExportParameters.getParameter(CSVExportParameters.exportDataFileItems).setValue(exportDataFileItems.getValue());
+
+        return csvExportParameters;
+    }
+
+
+    private static MultiChoiceParameter<ExportRowCommonElement> setExportRowCommonElements(){
 
         ExportRowCommonElement[] rowCommonElements = new ExportRowCommonElement[exportCommon];
         int position = 0;
@@ -552,16 +522,19 @@ public class Main{
         }
         if(numberOfDetectedPeaks){
             rowCommonElements[position] = ExportRowCommonElement.ROW_PEAK_NUMBER;
-            position++;
         }
-        MultiChoiceParameter<ExportRowCommonElement> exportCommonItems = new MultiChoiceParameter<ExportRowCommonElement>(
+        MultiChoiceParameter<ExportRowCommonElement> exportCommonItems = new MultiChoiceParameter<>(
                 "Export common elements", "Selection of row's elements to export",
                 ExportRowCommonElement.values());
 
         exportCommonItems.setValue(rowCommonElements);
+        return exportCommonItems;
+    }
+
+    private static MultiChoiceParameter<ExportRowDataFileElement> setRowDataFileElements(){
 
         ExportRowDataFileElement[] rowDataFileElements = new ExportRowDataFileElement[exportData];
-        position = 0;
+        int position = 0;
 
         if(peakStatus){
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_STATUS;
@@ -615,13 +588,12 @@ public class Main{
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_ASYMMETRYFACTOR;
             position++;
         }
-        if(peakMZmin){
+        if(peakMzMin){
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_MZMIN;
             position++;
         }
-        if(peakMZmax){
+        if(peakMzMax){
             rowDataFileElements[position] = ExportRowDataFileElement.PEAK_MZMAX;
-            position++;
         }
 
         MultiChoiceParameter<ExportRowDataFileElement> exportDataFileItems = new MultiChoiceParameter<>(
@@ -630,18 +602,6 @@ public class Main{
                 ExportRowDataFileElement.values());
 
         exportDataFileItems.setValue(rowDataFileElements);
-
-
-        csvExportParameters.getParameter(CSVExportParameters.exportCommonItems).setValue(exportCommonItems.getValue());
-        csvExportParameters.getParameter(CSVExportParameters.exportDataFileItems).setValue(exportDataFileItems.getValue());
-
-        CSVExportTask csvExportTask = new CSVExportTask(csvExportParameters);
-        csvExportTask.run();
-
-
-
-
-
-
+        return exportDataFileItems;
     }
 }
