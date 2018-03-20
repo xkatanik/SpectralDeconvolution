@@ -380,7 +380,7 @@ public class Main {
         Options options = new Options();
         options.addOption(Option.builder("i").required().hasArg().longOpt("inputFile").desc("[required] Name or path of input file. File name must end with .MPL").build());
         options.addOption(Option.builder("o").required().hasArg().longOpt("outputFile").desc("[required] Name or path of output file. File name must end with .CSV").build());
-        options.addOption(Option.builder("r").required(false).hasArg().longOpt("rawDataFile").desc("[required] Name or path of raw data file from previous step. File name must end with .CDF").build());
+        options.addOption(Option.builder("r").required().hasArg().longOpt("rawDataFile").desc("[required] Name or path of raw data file from previous step. File name must end with .CDF").build());
         options.addOption(Option.builder("cd").required(false).hasArg().longOpt("clusterDistance").desc("Minimum distance between any two clusters. [default 0.01]").build());
         options.addOption(Option.builder("cs").required(false).hasArg().longOpt("clusterSize").desc("Minimum size of a cluster. [default 2]").build());
         options.addOption(Option.builder("ci").required(false).hasArg().longOpt("clusterIntensity").desc("If the highest peak in a cluster has the intensity below" +
