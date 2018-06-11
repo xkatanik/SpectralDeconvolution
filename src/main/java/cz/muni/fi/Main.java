@@ -86,12 +86,13 @@ public class Main {
         Options options = setOptions();
         String header = "All options from -qr are output options and are set on true as default. To exclude some row from output file, use specific option."
                 + " For example, to exclude row ID, use option -noid.";
-        String footer = "Created by Kristian Katanik.";
+        String footer = "Created by Kristian Katanik, version 1.1.";
 
         if (args.length == 0) {
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setOptionComparator(null);
             helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer, true);
+            System.exit(1);
             return;
         }
 
@@ -104,10 +105,12 @@ public class Main {
                     HelpFormatter helpFormatter = new HelpFormatter();
                     helpFormatter.setOptionComparator(null);
                     helpFormatter.printHelp("Spectral deconvolution module help.", header, options, footer, true);
+                    System.exit(1);
                     return;
                 }
             }
             System.err.println("Some of the required parameters or their arguments are missing. Use -h or --help for help.");
+            System.exit(1);
             return;
         }
 
@@ -120,6 +123,7 @@ public class Main {
                 clusterDistance = Double.parseDouble(commandLine.getOptionValue("cd"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of clusterDistance value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -128,6 +132,7 @@ public class Main {
                 clusterSize = Integer.parseInt(commandLine.getOptionValue("cs"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of clusterSize value. Value has to be number in integer format.");
+                System.exit(1);
                 return;
             }
         }
@@ -136,6 +141,7 @@ public class Main {
                 clusterIntensity = Double.parseDouble(commandLine.getOptionValue("ci"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of clusterIntensity value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -147,6 +153,7 @@ public class Main {
                 edgeToHeightRatio = Double.parseDouble(commandLine.getOptionValue("eth"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of edgeToHeightRatio value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -155,6 +162,7 @@ public class Main {
                 deltaToHeightRatio = Double.parseDouble(commandLine.getOptionValue("dth"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of deltaToHeightRatio value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -163,6 +171,7 @@ public class Main {
                 sharpness = Double.parseDouble(commandLine.getOptionValue("s"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of sharpness value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -171,6 +180,7 @@ public class Main {
                 shapeSimilarityTolerance = Double.parseDouble(commandLine.getOptionValue("sst"));
             } catch (NumberFormatException e) {
                 System.err.println("Wrong format of shapeSimilarityTolerance value. Value has to be number in double format.");
+                System.exit(1);
                 return;
             }
         }
@@ -178,13 +188,18 @@ public class Main {
             mzValueModelPeak = false;
         }
         if (commandLine.hasOption("emz")) {
-            for (String value : commandLine.getOptionValues("emz")) {
-                try {
-                    Range<Double> range = Range.closed(Double.parseDouble(value), Double.parseDouble(value));
-                    excludeMzValues.add(range);
-                } catch (Exception e) {
-                    System.err.println("Wrong format of -excludeMzValues parameter.");
-                    return;
+            String value = commandLine.getOptionValue("emz");
+            if(!value.equals("none")){
+                String[] values = value.split(":");
+                for(String number : values){
+                    try {
+                        Range<Double> range = Range.closed(Double.parseDouble(number), Double.parseDouble(number));
+                        excludeMzValues.add(range);
+                    } catch (Exception e) {
+                        System.err.println("Wrong format of -excludeMzValues parameter.");
+                        System.exit(1);
+                        return;
+                    }
                 }
             }
         }
@@ -229,8 +244,6 @@ public class Main {
             numberOfDetectedPeaks = false;
             exportCommon--;
         }
-
-
         if (commandLine.hasOption("nops")) {
             peakStatus = false;
             exportData--;
@@ -298,6 +311,7 @@ public class Main {
             inputFile = new File(inputFileName);
         } catch (Exception e) {
             System.out.println("Unable to load input file.");
+            System.exit(1);
             return;
         }
 
@@ -306,6 +320,7 @@ public class Main {
             rawInputFile = new File(rawData);
         } catch (Exception e) {
             System.out.println("Unable to load raw file.");
+            System.exit(1);
             return;
         }
 
@@ -314,11 +329,13 @@ public class Main {
             outputFile = new File(outputFileName);
         } catch (Exception e) {
             System.out.println("Unable to create/load output file.");
+            System.exit(1);
             return;
         }
 
         if (!inputFile.exists() || inputFile.isDirectory() || !rawInputFile.exists() || rawInputFile.isDirectory()) {
             System.err.println("Unable to load input/raw file.");
+            System.exit(1);
             return;
         }
 
@@ -330,6 +347,7 @@ public class Main {
             rawDataFile2 = new RawDataFileImpl(rawInputFile.getName());
         } catch (IOException e) {
             System.err.println("Unable to open raw data file.");
+            System.exit(1);
             return;
         }
 
@@ -340,7 +358,7 @@ public class Main {
 
         XMLImportParameters xmlImportParameters = new XMLImportParameters();
         xmlImportParameters.getParameter(XMLImportParameters.filename).setValue(inputFile);
-        cz.muni.fi.XMLImportTask xmlImportTask = new cz.muni.fi.XMLImportTask(mZmineProject, xmlImportParameters);
+        XMLImportTask xmlImportTask = new XMLImportTask(mZmineProject, xmlImportParameters);
         xmlImportTask.run();
 
 
@@ -363,8 +381,8 @@ public class Main {
                 clusterIntensity, clusterSize, sharpness, deltaToHeightRatio, edgeToHeightRatio, shapeSimilarityTolerance, findSharedPeaks,
                 mzValueModelPeak, excludeMzValues);
 
-        cz.muni.fi.ADAP3DecompositionV1_5Task task =
-                new cz.muni.fi.ADAP3DecompositionV1_5Task(mZmineProject, mZmineProject.getPeakLists()[0], adap3DecompositionV1_5Parameters);
+        ADAP3DecompositionV1_5Task task =
+                new ADAP3DecompositionV1_5Task(mZmineProject, mZmineProject.getPeakLists()[0], adap3DecompositionV1_5Parameters);
         task.run();
 
         CSVExportParameters csvExportParameters = setCSVExportParameters(mZmineProject, outputFile, fieldSeparator, identificationSeparator,
@@ -395,8 +413,8 @@ public class Main {
         options.addOption(Option.builder("sst").required(false).hasArg().longOpt("shapeSimilarityTolerance").desc("Shape-similarity threshold is used to find similar peaks.(0..90) [default 18]").build());
         options.addOption(Option.builder("sm").required(false).longOpt("sharpnessModel").desc("Criterion to choose a model peak in a cluster: either peak with the highest m/z-value or with the highest sharpness.").build());
         options.addOption(Option.builder("mz").required(false).longOpt("mzModel").desc("Criterion to choose a model peak in a cluster: either peak with the highest m/z-value or with the highest sharpness. [as default]").build());
-        options.addOption(Option.builder("emz").required(false).hasArgs().longOpt("excludeMzValues").desc("M/z-values to exclude while selecting model peak." +
-                " Divide values with space, etc. 12.0 15.0 [default none]").build());
+        options.addOption(Option.builder("emz").required(false).hasArg().longOpt("excludeMzValues").desc("M/z-values to exclude while selecting model peak." +
+                " Divide values with colon, etc. 12.0:15.0 [default none]").build());
         options.addOption(Option.builder("fs").required(false).hasArg().longOpt("fieldSeparator").desc("Field separator [default , ]").build());
         options.addOption(Option.builder("is").required(false).hasArg().longOpt("identificationSeparator").desc("Identification separator [default ; ]").build());
         options.addOption(Option.builder("noqr").required(false).longOpt("quantitationResults").desc("Do not export quantitation results and other information").build());
@@ -467,7 +485,7 @@ public class Main {
 
         PeakListsParameter peakListsParameter = new PeakListsParameter();
         PeakListsSelection peakListsSelection1 = new PeakListsSelection();
-        peakListsSelection1.setSpecificPeakLists(new PeakList[]{mZmineProject.getPeakLists()[1]});
+        peakListsSelection1.setSpecificPeakLists(new PeakList[]{mZmineProject.getPeakLists()[0]});
         peakListsSelection1.setSelectionType(PeakListsSelectionType.SPECIFIC_PEAKLISTS);
         peakListsParameter.setValue(peakListsSelection1);
 
